@@ -250,7 +250,7 @@ func (c *Core) verifyHost(host string, client *Client, callback func()) {
 		if host != client.Session.pid.Address {
 			err = fmt.Errorf("Address does not match public "+
 				"identity\n\nContacted %v and reply came "+
-				"from %v", host, client.Session.pid.Address)
+				"from %v", host, client.Session.peer.Address)
 			return
 		}
 
