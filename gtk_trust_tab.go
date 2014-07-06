@@ -266,24 +266,26 @@ func (g *GtkContext) renderTrustItem(tr *core.TrustRecord) {
 }
 
 func (g *GtkContext) RenderTrust(rt *core.UiRenderTrust) {
-	g.DebugUi("RenderTrust")
+	glib.IdleAdd(func() {
+		g.DebugUi("RenderTrust")
 
-	// we need to recreate the tab here because we can't delete items
-	// out of the listbox
-	current := g.notebook.GetCurrentPage()
-	w := g.createTrust()
-	g.notebook.RemovePage(2) // make sure trust stays here!
-	g.notebook.AppendPage(w, g.lblTrust)
+		// we need to recreate the tab here because we can't delete items
+		// out of the listbox
+		current := g.notebook.GetCurrentPage()
+		w := g.createTrust()
+		g.notebook.RemovePage(2) // make sure trust stays here!
+		g.notebook.AppendPage(w, g.lblTrust)
 
-	for _, v := range rt.TrustRecords {
-		if v == nil {
-			return
+		for _, v := range rt.TrustRecords {
+			if v == nil {
+				return
+			}
+			g.renderTrustItem(v)
 		}
-		g.renderTrustItem(v)
-	}
-	g.trustListbox.ShowAll()
+		g.trustListbox.ShowAll()
 
-	// this is part of the hack to recreate the tab
-	g.notebook.ShowAll()
-	g.notebook.SetCurrentPage(current)
+		// this is part of the hack to recreate the tab
+		g.notebook.ShowAll()
+		g.notebook.SetCurrentPage(current)
+	})
 }

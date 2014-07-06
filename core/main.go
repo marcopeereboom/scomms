@@ -247,20 +247,12 @@ func (c *Core) verifyHost(host string, client *Client, callback func()) {
 			callback()
 		}()
 
-		if host != client.Session.pid.Address {
-			err = fmt.Errorf("Address does not match public "+
-				"identity\n\nContacted %v and reply came "+
-				"from %v", host, client.Session.peer.Address)
-			return
-		}
-
-		tr, err := c.trust.Get(c.identity, client.Session.pid)
+		tr, err := c.trust.Get(c.identity, client.Session.peer)
 		if err != nil {
 			err = fmt.Errorf("Could not read trust record: %v", err)
 			return
 		}
 
-		// do more test here
 		switch tr.State {
 		case StateAllowed:
 			err = nil
@@ -279,13 +271,24 @@ func (c *Core) verifyHost(host string, client *Client, callback func()) {
 			c.removeVerifyWaiter(client.Session.pid)
 			return
 		}
+
+		// do more test here
+		if host != client.Session.peer.Address {
+			err = fmt.Errorf("Address does not match public "+
+				"identity address \n\nContacted %v and reply "+
+				"came from %v", host,
+				client.Session.peer.Address)
+			return
+		}
 	}
 
 	// check if we know this host
-	_, err := c.trust.Get(c.identity, client.pid)
+	c.debugCore("trust get")
+	_, err := c.trust.Get(c.identity, client.peer)
+	c.debugCore("trust get %v", err)
 	if err != nil {
 		cpid := &UiConfirmPublicIdentity{
-			PublicIdentity: client.pid,
+			PublicIdentity: client.peer,
 		}
 		c.Send(core, []string{ui}, cpid)
 
