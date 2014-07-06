@@ -268,11 +268,19 @@ func (c *Core) verifyHost(host string, client *Client, callback func()) {
 		default:
 			// really can't happen
 			err = fmt.Errorf("You canceled trust")
-			c.removeVerifyWaiter(client.Session.pid)
+			c.removeVerifyWaiter(client.Session.peer)
 			return
 		}
 
 		// do more test here
+		if *tr.PublicIdentity.Key != *client.Session.peer.Key {
+			err = fmt.Errorf("Fingerprint does not match public "+
+				"identity fingerprint \n\nContacted %v and "+
+				"reply came from %v",
+				tr.PublicIdentity.Fingerprint(),
+				client.Session.peer.Fingerprint())
+			return
+		}
 		if host != client.Session.peer.Address {
 			err = fmt.Errorf("Address does not match public "+
 				"identity address \n\nContacted %v and reply "+
@@ -293,7 +301,7 @@ func (c *Core) verifyHost(host string, client *Client, callback func()) {
 		c.Send(core, []string{ui}, cpid)
 
 		// wait for something
-		c.addVerifyWaiter(client.Session.pid, finishVerify)
+		c.addVerifyWaiter(client.Session.peer, finishVerify)
 	} else {
 		finishVerify()
 	}

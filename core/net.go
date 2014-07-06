@@ -549,10 +549,10 @@ func (c *Core) ServerCallback(s *Session) {
 	}
 
 	// see if we trust this identity
-	tr, err := c.trust.Get(c.identity, s.pid)
+	tr, err := c.trust.Get(c.identity, s.peer)
 	if err != nil {
 		// not seen before, queue trust
-		err = c.trust.Add(c.identity, s.pid, StateQueued, nil, false)
+		err = c.trust.Add(c.identity, s.peer, StateQueued, nil, false)
 		if err != nil {
 			c.debugServer("ServerCallback failed to add trust %v",
 				err)
@@ -564,19 +564,23 @@ func (c *Core) ServerCallback(s *Session) {
 		// verify trust
 		if tr.State != StateAllowed {
 			c.debugServer("ServerCallback denied access")
-			return
+			confirmation.State = tr.State
+			confirmation.Error = fmt.Sprintf("Remote denied "+
+				"access: State %v", State[tr.State])
 		}
+	}
+
+	// queued
+	if confirmation.State == StateQueued {
+		c.debugServer("ServerCallback ConfirmationPhase went queued")
+		confirmation.State = StateQueued
+		confirmation.Error = fmt.Sprintf("Remote denied "+
+			"access: State %v", State[StateQueued])
 	}
 
 	err = s.ConfirmationPhase(&confirmation)
 	if err != nil {
 		c.debugServer("ServerCallback ConfirmationPhase %v", err)
-		return
-	}
-
-	// if we were queued abort Confirmation sequence
-	if confirmation.State == StateQueued {
-		c.debugServer("ServerCallback ConfirmationPhase went queued")
 		return
 	}
 

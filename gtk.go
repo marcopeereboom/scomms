@@ -56,8 +56,19 @@ func (g *GtkContext) Exit() {
 func resizePic(pic *gtk.Image) {
 	pb := pic.GetPixbuf()
 
-	w := float32(pic.GetAllocatedWidth())
-	h := float32(pb.GetHeight()) / float32(pb.GetWidth()) * float32(pic.GetAllocatedWidth())
+	var w, h, margin float32
+	margin = 0.9 // 90% of image size
+	if pb.GetWidth() < pb.GetHeight() {
+		// scale by width
+		w = float32(pic.GetAllocatedWidth()) * margin
+		h = float32(pb.GetHeight()) / float32(pb.GetWidth()) *
+			(float32(pic.GetAllocatedWidth()) * margin)
+	} else {
+		// scale by height
+		h = float32(pic.GetAllocatedHeight()) * margin
+		w = float32(pb.GetWidth()) / float32(pb.GetHeight()) *
+			(float32(pic.GetAllocatedHeight()) * margin)
+	}
 	pbScale, err := pb.ScaleSimple(int(w), int(h), gdk.INTERP_BILINEAR)
 	if err != nil {
 		return

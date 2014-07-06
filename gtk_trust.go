@@ -99,7 +99,7 @@ func (g *GtkContext) createConfirmPublicIdentity(m *core.UiConfirmPublicIdentity
 	lb.SetHExpand(true)
 	lb.SetVExpand(true)
 
-	grid.Attach(sw, 0, 0, 2, 4)
+	grid.Attach(sw, 0, 0, 2, 1)
 
 	// items
 	g.addItem(lb, "Name", m.PublicIdentity.Name)
@@ -115,10 +115,10 @@ func (g *GtkContext) createConfirmPublicIdentity(m *core.UiConfirmPublicIdentity
 		g.DebugUi("addItem %v", err)
 		return nil
 	}
-	pic.SetHExpand(true)
-	pic.SetVExpand(true)
+	//pic.SetHExpand(true)
+	//pic.SetVExpand(true)
 	setFromFile(m.PublicIdentity, pic)
-	grid.Attach(pic, 0, 2, 2, 2)
+	grid.Attach(pic, 0, 1, 2, 1)
 
 	// put on top of main window
 	d.SetTransientFor(g.w)
